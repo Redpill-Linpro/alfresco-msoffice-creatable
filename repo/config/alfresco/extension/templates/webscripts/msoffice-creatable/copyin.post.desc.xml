@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>copyin</shortname>
+  <description>MSOFFICE creatable copyin - Create Node Templates POST data webscript</description>
+  <url>/msoffice-creatable/copyin</url>
+  <family>msoffice-creatable</family>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>
