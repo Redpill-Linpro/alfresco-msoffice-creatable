@@ -72,8 +72,8 @@ You can use these PROGIDs in your Automation code, but it is recommended that yo
 <!--             <creatable type="doc" index="2001">Word.Document.7</creatable> -->
 
 <!-- for type use fileextension: doc, xls, docx, xlsx -->
-            <creatable type="doc" filename="nyt-dokument.docx" index="2002">Word.Document.12</creatable>
-            <creatable type="xls" filename="nyt-regneark.xlsx" index="2003">Excel.Sheet.12</creatable>
+            <creatable type="doc" filename="new-document.docx" index="2002">Word.Document.12</creatable>
+            <creatable type="xls" filename="new-sheet.xlsx" index="2003">Excel.Sheet.12</creatable>
 			
 <!--  use a template ...  -->
 <!--             <creatable type="doc" index="2004">site-54/documentLibrary/Untitled%20Document-1.docx</creatable> -->
