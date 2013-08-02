@@ -1,6 +1,6 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
-   "success": true,
-   "name": "${name}"
+   "success": name??,
+   "name": "${name?if_exists}"
 }
 </#escape>

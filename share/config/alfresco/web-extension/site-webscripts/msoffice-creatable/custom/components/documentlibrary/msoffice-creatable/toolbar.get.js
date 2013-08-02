@@ -11,13 +11,12 @@ if (model.widgets)
       if (widget.id == "DocListToolbar")
       { 
     	  var newCreateContent = [];
+    	  var newSubMenuCreateContent = [];
     	  
     	   var msoConfig = config.scoped["DocumentLibrary"]["msoffice-creatable"];
 
     	   if (msoConfig !== null)
     	   {
-
-    		   
                var configs = msoConfig.getChildren("creatable-types"),
     	            creatableConfig,
     	            configItem,
@@ -43,13 +42,24 @@ if (model.widgets)
     	                     creatableType = null != configItem.attributes["type"] ? configItem.attributes["type"].toString() : "doc";
     	                     fileName = null != configItem.attributes["filename"] ? configItem.attributes["filename"].toString() : "new";
     	                     copyin = null != configItem.attributes["use-copy-in"] ? configItem.attributes["use-copy-in"].toString() : "false";   
+    	                     submenu = null != configItem.attributes["in-submenu"] ? configItem.attributes["in-submenu"].toString() : "false";
+    	                     
     	                     msTemplate = configItem.value.toString();
     	                     index = parseInt(configItem.attributes["index"] || "0");
     	                     if (creatableType && msTemplate)
     	                     {
     	                       // url = "create-content?destination={nodeRef}&itemId=cm:content&formId=doclib-create-googledoc&mimeType=" + mimetype;
-    	                        
-    	                        newCreateContent.push(
+    	                    	 var menuArray = null;
+    	                        if ("false" == submenu) {
+    	                        	// main menu
+    	                        	menuArray = newCreateContent;
+
+    	                        } else {
+    	                        	//sub-menu
+    	                        	menuArray = newSubMenuCreateContent;
+    	                        }
+
+    	                        menuArray.push(
     	                        {
     	                           type: "javascript",
     	                           icon: creatableType,
@@ -58,6 +68,7 @@ if (model.widgets)
     	                           label: "msoffice." + creatableType,
     	                           msTemplate: msTemplate,
     	                           copyin: copyin,
+    	                           submenu: submenu,
     	                           index: index,
     	                           permission: "CreateChildren",
     	                           params:
@@ -88,7 +99,7 @@ if (model.widgets)
       name: "RPLP.MsOfficeCreateNewDocument",
       options: {
          siteId: (page.url.templateArgs.site != null) ? page.url.templateArgs.site : "",
-         createContentActions: newCreateContent.sort(sortByIndex)
+         createContentActions: newCreateContent.concat(newSubMenuCreateContent).sort(sortByIndex)
       }
    };
    model.widgets.push(msOfficeCreatable);

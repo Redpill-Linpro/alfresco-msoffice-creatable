@@ -21,13 +21,22 @@ function main()
    }
    
    // get the nodes and perform the copy - permission failures etc. will produce a status code response
-   var sourceNode = nodes[0];//search.findNode(sourceNodeRef),
-       parentNode = search.findNode(parentNodeRef);
+   var sourceNode = null;
+   var parentNode = null;
+   if (null != nodes && 0 < nodes.length) 
+   {
+	   var sourceNode = nodes[0];//search.findNode(sourceNodeRef),
+	   if (null != sourceNode) {
+		   parentNode = search.findNode(parentNodeRef);
+		   
+	   }
+   }
    if (sourceNode == null || parentNode == null)
    {
       status.setCode(status.STATUS_NOT_FOUND, "Source or destination node is missing for copy operation.");
+   } else {
+	   model.name = sourceNode.copy(parentNode).name;
    }
-   model.name = sourceNode.copy(parentNode).name;
 }
 
 main();

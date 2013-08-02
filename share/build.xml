@@ -63,7 +63,12 @@
 	<property name="repo.admin.username" value="admin" />
 	<property name="repo.admin.password" value="admin" />
 	<property name="repo.scripts.index" value="${tomcat.repo.url}${webapp.alfresco.path}/service/index" />
+	<property name="repo.js.debug" value="${tomcat.repo.url}${webapp.alfresco.path}/service/api/javascript/debugger" />
 	<property name="share.scripts.index" value="${tomcat.share.url}${webapp.share.path}/page/index" />
+	<property name="share.cache.clear" value="${tomcat.share.url}${webapp.share.path}/page/caches/dependency/clear" />
+	<property name="share.surfbug.enable" value="${tomcat.share.url}${webapp.share.path}/page/surfBugStatus" />
+	<property name="share.js.debug" value="${tomcat.share.url}${webapp.share.path}/page/api/javascript/debugger" />
+	
 	<!-- Properties to access the Tomcat Manager application -->
 	<property name="webapp.manager.url" value="${tomcat.url}/manager/text" />
 	<property name="webapp.manager.username" value="admin" />
@@ -501,7 +506,36 @@
 			</query>
 		</http>
 	</target>
-
+	<target name="enable-js-debug-repo" description="Enable Javascript debugging in repo web application" depends="">
+		<http url="${repo.js.debug}"
+               method="POST"
+               printrequest="false"
+               printrequestheaders="false"
+               printresponse="false"
+               printresponseheaders="false"
+               expected="200"
+               failonunexpected="true">
+			<credentials username="${repo.admin.username}" password="${repo.admin.password}" />
+			<query>
+				<parameter name="visible" value="true" />
+			</query>
+		</http>
+	</target>
+	<target name="disable-js-debug-repo" description="Disable js-debug in repo web application" depends="">
+		<http url="${repo.js.debug}"
+               method="POST"
+               printrequest="false"
+               printrequestheaders="false"
+               printresponse="false"
+               printresponseheaders="false"
+               expected="200"
+               failonunexpected="true">
+			<credentials username="${repo.admin.username}" password="${repo.admin.password}" />
+			<query>
+				<parameter name="visible" value="false" />
+			</query>
+		</http>
+	</target>
 	<target name="reload-webscripts-share" depends="" description="Reload Share webscripts">
 		<http url="${share.scripts.index}"
                method="POST"
@@ -518,8 +552,83 @@
 		</http>
 	</target>
 
-<!-- Share clear dependency cache : http://localhost:8080/share/page/caches/dependency/clear -->
-
+	<target name="clear-cache-share" description="Clear cache in share web application" depends="">
+		<http url="${share.cache.clear}"
+               method="POST"
+               printrequest="false"
+               printrequestheaders="false"
+               printresponse="false"
+               printresponseheaders="false"
+               expected="200"
+               failonunexpected="true">
+			<credentials username="${repo.admin.username}" password="${repo.admin.password}" />
+			<!-- query>
+				<parameter name="reset" value="on" />
+			</query -->
+		</http>
+	</target>
+	<target name="enable-surfbug-share" description="Enable surf bug in share web application" depends="">
+		<http url="${share.surfbug.enable}"
+               method="POST"
+               printrequest="false"
+               printrequestheaders="false"
+               printresponse="false"
+               printresponseheaders="false"
+               expected="200"
+               failonunexpected="true">
+			<credentials username="${repo.admin.username}" password="${repo.admin.password}" />
+			<query>
+				<parameter name="statusUpdate" value="enabled" />
+			</query>
+		</http>
+	</target>
+	<target name="disable-surfbug-share" description="Disable surf bug in share web application" depends="">
+		<http url="${share.surfbug.enable}"
+               method="POST"
+               printrequest="false"
+               printrequestheaders="false"
+               printresponse="false"
+               printresponseheaders="false"
+               expected="200"
+               failonunexpected="true">
+			<credentials username="${repo.admin.username}" password="${repo.admin.password}" />
+			<query>
+				<parameter name="statusUpdate" value="disabled" />
+			</query>
+		</http>
+	</target>
+	<target name="enable-js-debug-share" description="Enable Javascript debugging in share web application" depends="">
+		<http url="${share.js.debug}"
+               method="POST"
+               printrequest="false"
+               printrequestheaders="false"
+               printresponse="false"
+               printresponseheaders="false"
+               expected="200"
+               failonunexpected="true">
+			<credentials username="${repo.admin.username}" password="${repo.admin.password}" />
+			<query>
+				<parameter name="visible" value="true" />
+			</query>
+		</http>
+	</target>
+	<target name="disable-js-debug-share" description="Disable js-debug in share web application" depends="">
+		<http url="${share.js.debug}"
+               method="POST"
+               printrequest="false"
+               printrequestheaders="false"
+               printresponse="false"
+               printresponseheaders="false"
+               expected="200"
+               failonunexpected="true">
+			<credentials username="${repo.admin.username}" password="${repo.admin.password}" />
+			<query>
+				<parameter name="visible" value="false" />
+			</query>
+		</http>
+	</target>
+	
+	
 	<!--
         Uncomment to enable web application reloading from Ant. These tasks use the optional Tomcat
         ant tasks from catalina-ant.jar distributed with Tomcat.

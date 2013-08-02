@@ -99,28 +99,239 @@ if (typeof RPLP == "undefined" || !RPLP)
     	  // this was the one way to get custom data through Alfresco code without rewriting, keeping 4.2.x style extension
     	  for (var j = 0; j < this.options.createContentActions.length; j++)
           {
-    		  (function(actionDefinition) { // get a local copy of the current value
-    			  YAHOO.Bubbling.fire("registerAction",
-    			    {
-		    		  actionName: "onNewOfficeDocument" + actionDefinition.index,
-		    	        fn: function rplp_onNewOfficeDocument(file) {
-		    	        	parent.docListToolbar = this;
-		    	            if (parent._launchOnlineCreator(file, actionDefinition))
-		    	            {
-		    	               YAHOO.Bubbling.fire("metadataRefresh");
-		    	            }
-		    	            else
-		    	            {
-		    	               Alfresco.util.PopupManager.displayMessage(
-		    	               {
-		    	                  text: this.msg("message.edit-online.office.failure")
-		    	               });		 
-		    	            }
-		    	        }
-    			    });
-          		})(this.options.createContentActions[j]);
+    		  // if ("false" == this.options.createContentActions[j].submenu) {
+	    		  (function(actionDefinition) { // get a local copy of the current value
+	    			  YAHOO.Bubbling.fire("registerAction",
+	    			    {
+			    		  actionName: "onNewOfficeDocument" + actionDefinition.index,
+			    	        fn: function rplp_onNewOfficeDocument(file) {
+			    	        	parent.docListToolbar = this;
+			    	        	var feedbackMessage = Alfresco.util.PopupManager.displayMessage(
+			    	    		         {
+			    	    		            text: Alfresco.util.message("message.creating", this.name),
+			    	    		            spanClass: "wait",
+			    	    		            displayTime: 0
+			    	    		         });
+			    	            if (parent._launchOnlineCreator(file, actionDefinition))
+			    	            {
+			    	               YAHOO.Bubbling.fire("metadataRefresh");
+			    	            }
+			    	            else
+			    	            {
+			    	               Alfresco.util.PopupManager.displayMessage(
+			    	               {
+			    	                  text: this.msg("message.edit-online.office.failure")
+			    	               });		 
+			    	            }
+			    	            feedbackMessage.destroy();
+			    	        }
+	    			    });
+	          		})(this.options.createContentActions[j]);
+    		  //}
           }
  
+    	  //monkey path
+    	  /**
+    	   * appends to submenu
+    	   * 
+    	   *   /* 
+
+      onCreateByTemplateNodeBeforeShow: function DLTB_onCreateByTemplateNodeBeforeShow()
+      {
+         // Display loading message
+         var templateNodesMenu = this.widgets.createContent.getMenu().getSubmenus()[0];
+         if (templateNodesMenu.getItems().length == 0)
+         {
+            templateNodesMenu.clearContent();
+            templateNodesMenu.addItem(this.msg("label.loading"));
+            templateNodesMenu.render();
+
+            // Load template nodes
+            Alfresco.util.Ajax.jsonGet(
+            {
+               url: Alfresco.constants.PROXY_URI + "slingshot/doclib/node-templates",
+               successCallback:
+               {
+                  fn: function(response, menu)
+                  {
+                     var nodes = response.json.data,
+                        menuItems = [],
+                        name;
+                     for (var i = 0, il = nodes.length; i < il; i++)
+                     {
+                        node = nodes[i];
+                        name = $html(node.name);
+                        if (node.title && node.title !== node.name && this.options.useTitle)
+                        {
+                           name += '<span class="title">(' + $html(node.title) + ')</span>';
+                        }
+                        menuItems.push(
+                        {
+                           text: '<span title="' + $html(node.description) + '">' + name +'</span>',
+                           value: node
+                        });
+                     }
+                     if (menuItems.length == 0)
+                     {
+                        menuItems.push(this.msg("label.empty"));
+                     }
+                     templateNodesMenu.clearContent();
+                     templateNodesMenu.addItems(menuItems);
+                     templateNodesMenu.render();
+                  },
+                  scope: this
+               }
+            });
+         }
+      },
+    	   */
+    	  (function(origBeforeShow, createContentActions) {
+    		  Alfresco.DocListToolbar.prototype.onCreateByTemplateNodeBeforeShow = function() {
+    			  
+    			  // Display loading message
+    		         var templateNodesMenu = this.widgets.createContent.getMenu().getSubmenus()[0];
+    		         if (templateNodesMenu.getItems().length == 0)
+    		         {
+    		            templateNodesMenu.clearContent();
+    		            templateNodesMenu.addItem(this.msg("label.loading"));
+    		            templateNodesMenu.render();
+
+    		            // Load template nodes
+    		            Alfresco.util.Ajax.jsonGet(
+    		            {
+    		               url: Alfresco.constants.PROXY_URI + "slingshot/doclib/node-templates",
+    		               successCallback:
+    		               {
+    		                  fn: function(response, menu)
+    		                  {
+    		                     var nodes = response.json.data,
+    		                        menuItems = [],
+    		                        name;
+    		                     for (var i = 0, il = nodes.length; i < il; i++)
+    		                     {
+    		                        node = nodes[i];
+    		                        name = $html(node.name);
+    		                        if (node.title && node.title !== node.name && this.options.useTitle)
+    		                        {
+    		                           name += '<span class="title">(' + $html(node.title) + ')</span>';
+    		                        }
+    		                        menuItems.push(
+    		                        {
+    		                           text: '<span title="' + $html(node.description) + '">' + name +'</span>',
+    		                           value: node
+    		                        });
+    		                     }
+    		                  // Make sure we load sub menu lazily with data on each click
+    		                     var createContentMenu = this.widgets.createContent.getMenu(),
+    		                         groupIndex = 0;
+    		                     //Added
+    		                     for (var j = 0; j < createContentActions.length; j++)
+    		                     {
+	    		               		  if ("true" == createContentActions[j].submenu) {
+	    		                          var menuItem, content, url, config, html, li;
+	    		                          
+	    		                             // Create menu item from config
+	    		                             content = createContentActions[j];
+	    		                             config = { parent: createContentMenu };
+	    		                             url = null;
+
+    		                                config.onclick =
+    		                                {
+    		                                   fn: function(eventName, eventArgs, obj)
+    		                                   {
+    		                                      // Copy node so we can safely pass it to an action
+    		                                      var node = Alfresco.util.deepCopy(this.doclistMetadata.parent);
+
+    		                                      // Make it more similar to a usual doclib action callback object
+    		                                      var currentFolderItem = {
+    		                                         nodeRef: node.nodeRef,
+    		                                         node: node,
+    		                                         jsNode: new Alfresco.util.Node(node)
+    		                                      };
+    		                                      this[obj.params["function"]].call(this, currentFolderItem);
+    		                                   },
+    		                                   obj: content,
+    		                                   scope: this
+    		                                };
+
+    		                                url = '#';
+	    		             
+	    		                             // Create menu item
+	    		                             html = '<a href="' + url + '" rel="' + content.permission + '"><span style="background-image:url(' + Alfresco.constants.URL_RESCONTEXT + 'components/images/filetypes/' + content.icon + '-file-16.png)" class="' + content.icon + '-file">' + this.msg(content.label) + '</span></a>';
+	    		                             li = document.createElement("li");
+	    		                             li.innerHTML = html;
+	    		                             menuItem = new YAHOO.widget.MenuItem(li, config);
+
+	    		                             menuItems.push(menuItem);
+	    		             
+	    		               		  }
+    		                     }
+    		                     //Added
+    		                     
+    		                     if (menuItems.length == 0)
+    		                     {
+    		                        menuItems.push(this.msg("label.empty"));
+    		                     }
+    		                     templateNodesMenu.clearContent();
+    		                     templateNodesMenu.addItems(menuItems);
+    		                     templateNodesMenu.render(); 
+    		                  },
+    		                  scope: this
+    		               }
+    		            });
+    		         }
+    		            
+    	     };
+    	  }(Alfresco.DocListToolbar.prototype.onCreateByTemplateNodeBeforeShow, this.options.createContentActions));
+    	
+/*
+ *       onCreateByTemplateNodeClick: function DLTB_onCreateContentTemplateNode(sType, aArgs, p_obj)
+      {
+         // Create content based on a template
+         var node = aArgs[1].value,
+            destination = this.doclistMetadata.parent.nodeRef;
+
+         // If node is undefined the loading or empty menu items were clicked
+         if (node)
+         {
+            Alfresco.util.Ajax.jsonPost(
+            {
+               url: Alfresco.constants.PROXY_URI + "slingshot/doclib/node-templates",
+               dataObj:
+               {
+                  sourceNodeRef: node.nodeRef,
+                  parentNodeRef: destination
+               },
+               successCallback:
+               {
+                  fn: function (response)
+                  {
+                     // Make sure we get other components to update themselves to show the new content
+                     YAHOO.Bubbling.fire("nodeCreated",
+                     {
+                        name: node.name,
+                        parentNodeRef: destination,
+                        highlightFile: response.json.name
+                     });
+                  }
+               },
+               successMessage: this.msg("message.create-content-by-template-node.success", node.name),
+               failureMessage: this.msg("message.create-content-by-template-node.failure", node.name)
+            });
+         }
+      },*/
+ 
+    	  (function(origNodeClick) {
+    		  Alfresco.DocListToolbar.prototype.onCreateByTemplateNodeClick = function(sType, aArgs, p_obj) {
+    			  
+    			  origNodeClick.call(this,sType, aArgs, p_obj);
+
+    			  //path
+    	     };
+    	  }(Alfresco.DocListToolbar.prototype.onCreateByTemplateNodeClick));
+
+
+    	  
       },
   	 
       /**
@@ -133,7 +344,12 @@ if (typeof RPLP == "undefined" || !RPLP)
        */
       _copyNode: function dlA__copy(newParentNodeRef, sourcePath, loc)
       {
-
+    	  var feedbackMessage = Alfresco.util.PopupManager.displayMessage(
+    		         {
+    		            text: Alfresco.util.message("message.creating", this.name),
+    		            spanClass: "wait",
+    		            displayTime: 0
+    		         });
     	  var me = this;
            Alfresco.util.Ajax.jsonPost(
                    {
@@ -143,15 +359,14 @@ if (typeof RPLP == "undefined" || !RPLP)
                           sourcePath: sourcePath,
                           parentNodeRef: newParentNodeRef
                       },
+                      failureCallback: { fn: function (response)
+                          { feedbackMessage.destroy(); } },
                       successCallback:
                       {
                     	  
                          fn: function (response)
                          {
-                        	 
-
-                            
-                            if (null != response) {
+                            if (null != response && null != response.json) {
                             	//fetch resulting node
                           	   var newName = response.json.name;
                   	    	   // new name
@@ -177,18 +392,20 @@ if (typeof RPLP == "undefined" || !RPLP)
                             	    		break;
                             	    	}
                             	      }
+                            	     
                             	    }
                             	   
-                          	  // Make sure we get other components to update themselves to show the new content
-                                YAHOO.Bubbling.fire("nodeCreated",
-                                {
-                                   name: response.json.name,
-                                   parentNodeRef: newParentNodeRef,
-                                   highlightFile: response.json.name
-                                });
-                                
-                         	   
-                         	
+                            	   
+	                          	  // Make sure we get other components to update themselves to show the new content
+	                                YAHOO.Bubbling.fire("nodeCreated",
+	                                {
+	                                   name: response.json.name,
+	                                   parentNodeRef: newParentNodeRef,
+	                                   highlightFile: response.json.name
+	                                });
+	                                
+	                                feedbackMessage.destroy();
+	                         	
 //                           	var foo = {
 //                           		  count :0,
 //                           		  'method' : function(data) {
@@ -206,13 +423,14 @@ if (typeof RPLP == "undefined" || !RPLP)
                             }, this);
                          	   
                  	    	   
-                            } 
+                            }
+                            
                          },
                          scope: this,
                          loc: loc
                       	 
                       },
-                      successMessage: this.msg("message.create-content-by-template-node.success", sourcePath),
+                      //successMessage: this.msg("message.create-content-by-template-node.success", sourcePath),
                       failureMessage: this.msg("message.create-content-by-template-node.failure", sourcePath)
                    });
 		 
