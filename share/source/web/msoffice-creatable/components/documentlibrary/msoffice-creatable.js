@@ -89,6 +89,7 @@ if (typeof RPLP == "undefined" || !RPLP)
        */
       onReady: function MsOfficeCreateNewDocument_onReady(layer, args)
       {
+    	  //this ~ documentLibrary
     	  var parent = this;
     	  
     	  
@@ -103,28 +104,14 @@ if (typeof RPLP == "undefined" || !RPLP)
 	    		  (function(actionDefinition) { // get a local copy of the current value
 	    			  YAHOO.Bubbling.fire("registerAction",
 	    			    {
-			    		  actionName: "onNewOfficeDocument" + actionDefinition.index,
-			    	        fn: function rplp_onNewOfficeDocument(file) {
-			    	        	parent.docListToolbar = this;
-			    	        	var feedbackMessage = Alfresco.util.PopupManager.displayMessage(
-			    	    		         {
-			    	    		            text: Alfresco.util.message("message.creating", this.name),
-			    	    		            spanClass: "wait",
-			    	    		            displayTime: 0
-			    	    		         });
-			    	            if (parent._launchOnlineCreator(file, actionDefinition))
-			    	            {
-			    	               YAHOO.Bubbling.fire("metadataRefresh");
-			    	            }
-			    	            else
-			    	            {
-			    	               Alfresco.util.PopupManager.displayMessage(
-			    	               {
-			    	                  text: this.msg("message.edit-online.office.failure")
-			    	               });		 
-			    	            }
-			    	            feedbackMessage.destroy();
+			    		    actionName: "onNewOfficeDocument" + actionDefinition.index,
+			    	        fn: function rplp_onNewOfficeDocument(file)
+	    			  		{
+			    	        	//this ~ DocumentList toolbar
+			    	          	parent.docListToolbar = this;
+			    	          	parent.newOfficeDocument(file, actionDefinition);
 			    	        }
+			    	          	
 	    			    });
 	          		})(this.options.createContentActions[j]);
     		  //}
@@ -134,57 +121,7 @@ if (typeof RPLP == "undefined" || !RPLP)
     	  /**
     	   * appends to submenu
     	   * 
-    	   *   /* 
-
-      onCreateByTemplateNodeBeforeShow: function DLTB_onCreateByTemplateNodeBeforeShow()
-      {
-         // Display loading message
-         var templateNodesMenu = this.widgets.createContent.getMenu().getSubmenus()[0];
-         if (templateNodesMenu.getItems().length == 0)
-         {
-            templateNodesMenu.clearContent();
-            templateNodesMenu.addItem(this.msg("label.loading"));
-            templateNodesMenu.render();
-
-            // Load template nodes
-            Alfresco.util.Ajax.jsonGet(
-            {
-               url: Alfresco.constants.PROXY_URI + "slingshot/doclib/node-templates",
-               successCallback:
-               {
-                  fn: function(response, menu)
-                  {
-                     var nodes = response.json.data,
-                        menuItems = [],
-                        name;
-                     for (var i = 0, il = nodes.length; i < il; i++)
-                     {
-                        node = nodes[i];
-                        name = $html(node.name);
-                        if (node.title && node.title !== node.name && this.options.useTitle)
-                        {
-                           name += '<span class="title">(' + $html(node.title) + ')</span>';
-                        }
-                        menuItems.push(
-                        {
-                           text: '<span title="' + $html(node.description) + '">' + name +'</span>',
-                           value: node
-                        });
-                     }
-                     if (menuItems.length == 0)
-                     {
-                        menuItems.push(this.msg("label.empty"));
-                     }
-                     templateNodesMenu.clearContent();
-                     templateNodesMenu.addItems(menuItems);
-                     templateNodesMenu.render();
-                  },
-                  scope: this
-               }
-            });
-         }
-      },
-    	   */
+    	   */ 
     	  (function(origBeforeShow, createContentActions) {
     		  Alfresco.DocListToolbar.prototype.onCreateByTemplateNodeBeforeShow = function() {
     			  
@@ -283,57 +220,43 @@ if (typeof RPLP == "undefined" || !RPLP)
     		            
     	     };
     	  }(Alfresco.DocListToolbar.prototype.onCreateByTemplateNodeBeforeShow, this.options.createContentActions));
-    	
-/*
- *       onCreateByTemplateNodeClick: function DLTB_onCreateContentTemplateNode(sType, aArgs, p_obj)
-      {
-         // Create content based on a template
-         var node = aArgs[1].value,
-            destination = this.doclistMetadata.parent.nodeRef;
-
-         // If node is undefined the loading or empty menu items were clicked
-         if (node)
-         {
-            Alfresco.util.Ajax.jsonPost(
-            {
-               url: Alfresco.constants.PROXY_URI + "slingshot/doclib/node-templates",
-               dataObj:
-               {
-                  sourceNodeRef: node.nodeRef,
-                  parentNodeRef: destination
-               },
-               successCallback:
-               {
-                  fn: function (response)
-                  {
-                     // Make sure we get other components to update themselves to show the new content
-                     YAHOO.Bubbling.fire("nodeCreated",
-                     {
-                        name: node.name,
-                        parentNodeRef: destination,
-                        highlightFile: response.json.name
-                     });
-                  }
-               },
-               successMessage: this.msg("message.create-content-by-template-node.success", node.name),
-               failureMessage: this.msg("message.create-content-by-template-node.failure", node.name)
-            });
-         }
-      },*/
- 
-    	  (function(origNodeClick) {
-    		  Alfresco.DocListToolbar.prototype.onCreateByTemplateNodeClick = function(sType, aArgs, p_obj) {
-    			  
-    			  origNodeClick.call(this,sType, aArgs, p_obj);
-
-    			  //path
-    	     };
-    	  }(Alfresco.DocListToolbar.prototype.onCreateByTemplateNodeClick));
-
-
-    	  
+    	    	  
       },
-  	 
+      
+      newOfficeDocument: function rplp_onNewOfficeDocument(file, actionDefinition) {
+    	//Ask for new name ...
+    	var nameheader = this.msg("message.name.header");
+    	var nametext = this.msg("message.name.text");
+  	    Alfresco.util.PopupManager.getUserInput(
+		         {
+		            title: nameheader,
+		            text: nametext,
+		            input: "text",
+		            value: actionDefinition.filename,
+		            callback:
+		            {
+		               fn: function rplp_promptNewnameCallback (newNodeName, obj)
+		               {
+		            	   actionDefinition.filename = newNodeName;
+		            	   
+		    	            if (this._launchOnlineCreator(file, actionDefinition))
+		    	            {
+		    	               YAHOO.Bubbling.fire("metadataRefresh");
+		    	            }
+		    	            else
+		    	            {
+		    	               Alfresco.util.PopupManager.displayMessage(
+		    	               {
+		    	                  text: this.msg("message.edit-online.office.failure")
+		    	               });		 
+		    	            }
+		               },
+		               obj: {},
+		               scope: this
+		            }
+		         });
+    	
+    },
       /**
        * Opens the appropriate Microsoft Office application for online editing.
        * Supports: Microsoft Office 2003, 2007 & 2010.
@@ -344,12 +267,8 @@ if (typeof RPLP == "undefined" || !RPLP)
        */
       _copyNode: function dlA__copy(newParentNodeRef, sourcePath, loc)
       {
-    	  var feedbackMessage = Alfresco.util.PopupManager.displayMessage(
-    		         {
-    		            text: Alfresco.util.message("message.creating", this.name),
-    		            spanClass: "wait",
-    		            displayTime: 0
-    		         });
+    	  var feedbackMessage = this.myWait();
+    	  
     	  var me = this;
            Alfresco.util.Ajax.jsonPost(
                    {
@@ -468,6 +387,8 @@ if (typeof RPLP == "undefined" || !RPLP)
        } 
        else if (appProgID !== null)
        {
+    	   var feedbackMessage = this.myWait();
+
     	   //Check if a path is given (for a template)
     	   // if path MS Office will retrieve the template as basis for new document
     	   if (-1 < appProgID.indexOf("/")) {
@@ -483,29 +404,57 @@ if (typeof RPLP == "undefined" || !RPLP)
              record.onlineEditUrl = Alfresco.util.onlineEditUrl(this.docListToolbar.doclistMetadata.custom.vtiServer, loc);
           }
 
+          var returnValue = false;
           if (YAHOO.env.ua.ie > 0)
           {
-             return this._launchOnlineCreatorIE(controlProgID, record, appProgID);
+        	  returnValue = this._launchOnlineCreatorIE(controlProgID, record, appProgID);
           }
           
           if (Alfresco.util.isSharePointPluginInstalled())
           {
-             return this._launchOnlineCreatorPlugin(record, appProgID);
+        	  returnValue = this._launchOnlineCreatorPlugin(record, appProgID);
           }
           else
           {
+        	 feedbackMessage.destroy();
              Alfresco.util.PopupManager.displayPrompt(
              {
                 text: this.msg("actions.editOnline.failure", loc.file)
              });
-             return false;
           }
+          
+          feedbackMessage.destroy();
+          return returnValue;
+          
        }
 
        // No success in launching application via ActiveX control; launch the WebDAV URL anyway
        return window.open(record.onlineEditUrl, "_blank");
     },
 
+    myWait: function dla_myWait() {
+    	
+            var prompt = new YAHOO.widget.SimpleDialog("message",
+                {
+                   close: false,
+                   constraintoviewport: true,
+                   draggable: true,
+                   effect: null,
+                   modal: true,
+                   visible: false,
+                   zIndex: 100
+                });
+
+          // Show the prompt text
+          prompt.setBody("<span class='wait'>" + this.msg("message.creating") + "</span>");
+
+          // Add the dialog to the dom, center it and show it.
+          prompt.render(document.body);
+          prompt.center();
+          Dom.get("message_h").style.display = 'none';
+          prompt.show();
+          return prompt;
+    },
     /**
      * Opens the appropriate Microsoft Office application for online editing.
      * Supports: Microsoft Office 2003, 2007 & 2010.
