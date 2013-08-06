@@ -43,6 +43,7 @@ if (model.widgets)
     	                     fileName = null != configItem.attributes["filename"] ? configItem.attributes["filename"].toString() : "new";
     	                     copyin = null != configItem.attributes["use-copy-in"] ? configItem.attributes["use-copy-in"].toString() : "false";   
     	                     submenu = null != configItem.attributes["in-submenu"] ? configItem.attributes["in-submenu"].toString() : "false";
+    	                     newnamedialog = null != configItem.attributes["new-name-dialog"] ? configItem.attributes["new-name-dialog"].toString() : "false";
     	                     
     	                     msTemplate = configItem.value.toString();
     	                     index = parseInt(configItem.attributes["index"] || "0");
@@ -69,6 +70,7 @@ if (model.widgets)
     	                           msTemplate: msTemplate,
     	                           copyin: copyin,
     	                           submenu: submenu,
+    	                           newnamedialog: newnamedialog,
     	                           index: index,
     	                           permission: "CreateChildren",
     	                           params:

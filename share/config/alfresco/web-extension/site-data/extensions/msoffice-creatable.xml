@@ -79,7 +79,7 @@ You can use these PROGIDs in your Automation code, but it is recommended that yo
 <!--             <creatable type="doc" index="2004">site-54/documentLibrary/Untitled%20Document-1.docx</creatable> -->
 
 <!-- for using a Mac MS Office 2011 work-around, no folder display when saving doc -->
-			<creatable type="doc" filename="nyt-dokument.docx" index="2004" use-copy-in="true" in-submenu="true">/app:company_home/st:sites/cm:mstemplate/cm:documentLibrary/cm:ny.docx</creatable>
+			<creatable type="doc" filename="nyt-dokument.docx" index="2004" use-copy-in="true" in-submenu="true" new-name-dialog="true">/app:company_home/st:sites/cm:mstemplate/cm:documentLibrary/cm:ny.docx</creatable>
             <creatable type="xls" filename="nyt-regneark.xlsx" index="2005" use-copy-in="true">/app:company_home/st:sites/cm:mstemplate/cm:documentLibrary/cm:ny.xlsx</creatable>
             <creatable type="ppt" filename="nye-slides.pptx" index="2006" use-copy-in="true">/app:company_home/st:sites/cm:mstemplate/cm:documentLibrary/cm:ny.pptx</creatable>
 

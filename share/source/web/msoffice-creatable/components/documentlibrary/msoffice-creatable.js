@@ -224,39 +224,36 @@ if (typeof RPLP == "undefined" || !RPLP)
       },
       
       newOfficeDocument: function rplp_onNewOfficeDocument(file, actionDefinition) {
-    	//Ask for new name ...
-    	var nameheader = this.msg("message.name.header");
-    	var nametext = this.msg("message.name.text");
-  	    Alfresco.util.PopupManager.getUserInput(
-		         {
-		            title: nameheader,
-		            text: nametext,
-		            input: "text",
-		            value: actionDefinition.filename,
-		            callback:
-		            {
-		               fn: function rplp_promptNewnameCallback (newNodeName, obj)
-		               {
-		            	   actionDefinition.filename = newNodeName;
-		            	   
-		    	            if (this._launchOnlineCreator(file, actionDefinition))
-		    	            {
-		    	               YAHOO.Bubbling.fire("metadataRefresh");
-		    	            }
-		    	            else
-		    	            {
-		    	               Alfresco.util.PopupManager.displayMessage(
-		    	               {
-		    	                  text: this.msg("message.edit-online.office.failure")
-		    	               });		 
-		    	            }
-		               },
-		               obj: {},
-		               scope: this
-		            }
-		         });
+    	  if ("true" == actionDefinition.newnamedialog) 
+    	  {
+	    	//Ask for new name ...
+	    	var nameheader = this.msg("message.name.header");
+	    	var nametext = this.msg("message.name.text");
+	  	    Alfresco.util.PopupManager.getUserInput(
+			         {
+			            title: nameheader,
+			            text: nametext,
+			            input: "text",
+			            value: actionDefinition.filename,
+			            callback:
+			            {
+			               fn: function rplp_promptNewnameCallback (newNodeName, obj)
+			               {
+			            	   actionDefinition.filename = newNodeName;
+			            	   
+			            	   this._launch(file, actionDefinition);
+			               },
+			               obj: {},
+			               scope: this
+			            }
+			         });
+    	 } 
+    	 else
+	     {
+    	 	this._launch(file, actionDefinition);
+	 	 }
     	
-    },
+      },
       /**
        * Opens the appropriate Microsoft Office application for online editing.
        * Supports: Microsoft Office 2003, 2007 & 2010.
@@ -353,6 +350,20 @@ if (typeof RPLP == "undefined" || !RPLP)
                       failureMessage: this.msg("message.create-content-by-template-node.failure", sourcePath)
                    });
 		 
+      },
+      
+      _launch: function dla_launch(file, actionDefinition) {
+    	  if (this._launchOnlineCreator(file, actionDefinition))
+          {
+             YAHOO.Bubbling.fire("metadataRefresh");
+          }
+          else
+          {
+             Alfresco.util.PopupManager.displayMessage(
+             {
+                text: this.msg("message.edit-online.office.failure")
+             });		 
+          }
       },
     /**
      * Opens the appropriate Microsoft Office application for online editing.
