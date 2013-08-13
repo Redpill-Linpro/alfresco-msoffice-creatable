@@ -222,7 +222,14 @@ if (typeof RPLP == "undefined" || !RPLP)
     	  }(Alfresco.DocListToolbar.prototype.onCreateByTemplateNodeBeforeShow, this.options.createContentActions));
     	    	  
       },
-      
+      getBasename: function rplp_getBaseName(filename) {
+    	  var splitted = filename.split('.');
+    	  return splitted[splitted.length - 2];
+      },
+
+      getExtension: function rplp_getBaeName(filename) {
+    	  return filename.split('.').pop();
+      }, 
       newOfficeDocument: function rplp_onNewOfficeDocument(file, actionDefinition) {
     	  if ("true" == actionDefinition.newnamedialog) 
     	  {
@@ -234,12 +241,12 @@ if (typeof RPLP == "undefined" || !RPLP)
 			            title: nameheader,
 			            text: nametext,
 			            input: "text",
-			            value: actionDefinition.filename,
+			            value: this.getBasename(actionDefinition.filename),
 			            callback:
 			            {
 			               fn: function rplp_promptNewnameCallback (newNodeName, obj)
 			               {
-			            	   actionDefinition.filename = newNodeName;
+			            	   actionDefinition.filename = newNodeName + "." + this.getExtension(actionDefinition.filename);
 			            	   
 			            	   this._launch(file, actionDefinition);
 			               },
@@ -273,13 +280,13 @@ if (typeof RPLP == "undefined" || !RPLP)
                       dataObj:
                       {
                           sourcePath: sourcePath,
-                          parentNodeRef: newParentNodeRef
+                          parentNodeRef: newParentNodeRef,
+                          newname: loc.file
                       },
                       failureCallback: { fn: function (response)
                           { feedbackMessage.destroy(); } },
                       successCallback:
                       {
-                    	  
                          fn: function (response)
                          {
                             if (null != response && null != response.json) {
@@ -293,6 +300,7 @@ if (typeof RPLP == "undefined" || !RPLP)
                           	    //YAHOO.Bubbling.subscribe("highlightFile", function RPLP_onFilterChanged(layer, args){
                           	   docList.widgets.dataTable.subscribe("renderEvent", function RPLP_onFilterChanged(layer, args){ 
                           		// edit online
+                          		   //this ~DataTable
                             	   if (docToolbar.doclistMetadata.onlineEditing) {
                             		 var editOnlineUrl = Alfresco.util.onlineEditUrl(docToolbar.doclistMetadata.custom.vtiServer, loc);
                             		 // Reference to Document List component
@@ -310,37 +318,26 @@ if (typeof RPLP == "undefined" || !RPLP)
                             	      }
                             	     
                             	    }
-                            	   
+                            	   args.destroyMyWait(feedbackMessage);
+                          	   }, this);
+                          	   
+//                            	   var laterCallback = {
+//                                		  count :0,
+//                                		  'fn' : function() {
+//                                			  me.destroyMyWait(feedbackMessage);
+//                                		      timer.cancel();
+//                                		  }
+//                                		}
+//                                		var timer = YAHOO.lang.later(5000, laterCallback, 'fn', [], false);
                             	   
 	                          	  // Make sure we get other components to update themselves to show the new content
 	                                YAHOO.Bubbling.fire("nodeCreated",
 	                                {
-	                                   name: response.json.name,
+	                                   name: newName,
 	                                   parentNodeRef: newParentNodeRef,
-	                                   highlightFile: response.json.name
+	                                   highlightFile: newName
 	                                });
-	                                
-	                                feedbackMessage.destroy();
-	                         	
-//                           	var foo = {
-//                           		  count :0,
-//                           		  'method' : function(data) {
-//                           		    this.count++;
-//                           		    if(this.count == 10) {
-//                           		      timer.cancel();
-//                           		    }
-//                           		    console.log(this.count);
-//                           		  }
-//                           		}
-//                           		var timer = YAHOO.lang.later(1000, foo, 'method', [{data:'bar', data2:'zeta'}], true);`
-                         			 
-//                         	YAHOO.Bubbling.on("filterChanged",
-//                         			YAHOO.Bubbling.unsubscribe("filterChanged", this.onBeforeFormRuntimeInit); 
-                            }, this);
-                         	   
-                 	    	   
                             }
-                            
                          },
                          scope: this,
                          loc: loc
@@ -375,7 +372,7 @@ if (typeof RPLP == "undefined" || !RPLP)
      */
     _launchOnlineCreator: function dlA__launchOnlineCreator(record, actionDefinition)
     {
-       var controlProgID = "SharePoint.OpenDocuments", //expression.CreateNewDocument2(pdisp, bstrTemplateLocation, bstrDefaultSaveLocation)
+       var controlProgID = "SharePoint.OpenDocuments", 
           jsNode = record.jsNode,
           loc = {
     		   path: this.docListToolbar.currentPath,
@@ -427,14 +424,14 @@ if (typeof RPLP == "undefined" || !RPLP)
           }
           else
           {
-        	 feedbackMessage.destroy();
+        	  this.destroyMyWait(feedbackMessage);
              Alfresco.util.PopupManager.displayPrompt(
              {
                 text: this.msg("actions.editOnline.failure", loc.file)
              });
           }
           
-          feedbackMessage.destroy();
+          this.destroyMyWait(feedbackMessage);
           return returnValue;
           
        }
@@ -442,7 +439,12 @@ if (typeof RPLP == "undefined" || !RPLP)
        // No success in launching application via ActiveX control; launch the WebDAV URL anyway
        return window.open(record.onlineEditUrl, "_blank");
     },
-
+    
+    destroyMyWait: function dla_destroyMyWait(dialog) {
+    	//if (dialog.cfg.getProperty("visible")) 
+    		dialog.destroy();
+    },
+    
     myWait: function dla_myWait() {
     	
             var prompt = new YAHOO.widget.SimpleDialog("message",

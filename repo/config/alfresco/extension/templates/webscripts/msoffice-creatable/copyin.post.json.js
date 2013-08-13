@@ -35,8 +35,36 @@ function main()
    {
       status.setCode(status.STATUS_NOT_FOUND, "Source or destination node is missing for copy operation.");
    } else {
-	   model.name = sourceNode.copy(parentNode).name;
+	   var newname = json.get("newname");
+	   var newnode = sourceNode.copy(parentNode);
+	   
+	   if (null != newnode) {
+		   var cont = 10;
+		   while (0 < cont) {
+			   try {
+				   newnode.properties.name = findGoodname(newname, parentNode.children);
+				   newnode.save();
+				   cont = 0;
+			   } catch(e) {
+				   newname = "copy-of-" + newname; 
+				   cont--;
+				   //hmmm
+				   var newnode = sourceNode.copy(parentNode);
+			   }
+		   }
+		   model.name = newnode.properties.name;
+	   }
    }
 }
+
+function findGoodname(newname, children) {
+	for (var child in children) {
+		if (newname == ""+children[child].name) {
+			return findGoodname("copy of " + newname, children);
+		}
+	}
+	return newname;
+}
+
 
 main();
