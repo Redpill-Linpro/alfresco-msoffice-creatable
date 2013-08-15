@@ -10,7 +10,7 @@ if (typeof RPLP == "undefined" || !RPLP)
 
 
 /**
- * LibreOffice client script
+ * MS Office creatable client script
  * 
  * @namespace RPLP
  * @class RPLP.MsOfficeCreateNewDocument
@@ -36,10 +36,10 @@ if (typeof RPLP == "undefined" || !RPLP)
       $isValueSet = Alfresco.util.isValueSet;
       
    /**
-    * DocumentGeographicInfo constructor.
+    * Constructor.
     * 
     * @param {String} htmlId The HTML id of the parent element
-    * @return {Extras.DocumentGeographicInfo} The new DocumentGeographicInfo instance
+    * @return {RPLP.MsOfficeCreateNewDocument} The new instance
     * @constructor
     */
    RPLP.MsOfficeCreateNewDocument = function(htmlId)

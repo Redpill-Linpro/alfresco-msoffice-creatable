@@ -655,7 +655,7 @@ This is due to the fact that <Valve className="org.apache.catalina.authenticator
 
 	<target name="reload-webapp-share" description="Reload share web application" depends="">
 		<echo>Url: ${webapp.manager.url}</echo>
-		<echo>Path: ${webapp.alfresco.path}</echo>
+		<echo>Path: ${webapp.share.path}</echo>
 		<echo>User: ${webapp.manager.username}</echo>
 		<echo>Pass: ${webapp.manager.password}</echo>
 		<reload 
